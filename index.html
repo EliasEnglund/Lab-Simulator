@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Simulator, live</title>
+<style>html,body{margin:0;height:100%;background:#b9c6cf;color:#2e2b36;font:15px/1.4 ui-monospace,Consolas,Menlo,monospace}#m{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#f4f1e6;border:3px solid #4a4654;border-radius:4px;padding:16px 20px;max-width:440px;text-align:center}</style>
+</head>
+<body>
+<div id="m">Opening the lab...</div>
+<script>
+// This file never needs replacing: the page itself is fetched from the game's
+// database each time, so it is always the one that goes with the running game.
+// (All inside one function: the page that replaces this one declares its own names.)
+(function () {
+const DB = (new URLSearchParams(location.search).get("db") || "https://lab-evolution-df66b-default-rtdb.europe-west1.firebasedatabase.app").replace(/\/$/, "");
+async function open_lab() {
+  try {
+    if (!DB) throw new Error("no address");
+    const r = await fetch(DB + "/live/page.json", {cache: "no-store"});
+    const page = await r.json();
+    if (typeof page !== "string" || page.length < 1000) throw new Error("no page yet");
+    window.__LAB_DB = DB;
+    document.open(); document.write(page); document.close();
+  } catch (e) {
+    document.getElementById("m").innerHTML = "<b>The lab is not there yet.</b><br>The game has to be started once before this page can open. Trying again every few seconds...";
+    setTimeout(open_lab, 4000);
+  }
+}
+open_lab();
+})();
+</script>
+</body>
+</html>
